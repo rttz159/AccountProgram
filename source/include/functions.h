@@ -2,12 +2,14 @@
 
 #include<vector>
 #include<string>
+#include"inputStatement.h"
 
 using namespace std;
 
 //Menu
 int main_menu();
 void month_statement();
+void currentMonthDataDisplayer (vector<inputStatement> &statement_list);
 
 //Getter
 int choiceGetter(int num);

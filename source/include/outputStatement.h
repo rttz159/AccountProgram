@@ -4,7 +4,7 @@
 
 using namespace std;
 
-struct statement{
+struct inputStatement{
 
     int date[3];
     string description;

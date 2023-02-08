@@ -2,7 +2,11 @@
   "files.associations": {
     "ostream": "cpp",
     "xstring": "cpp",
-    "iostream": "cpp"
+    "iostream": "cpp",
+    "iosfwd": "cpp",
+    "ios": "cpp",
+    "iomanip": "cpp",
+    "vector": "cpp"
   },
   "cmake.sourceDirectory": "${workspaceFolder}/source",
   "cmake.configureOnOpen": true

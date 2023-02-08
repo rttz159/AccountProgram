@@ -6,7 +6,8 @@
 #include<sstream>
 #include<fstream>
 #include"functions.h"
-#include"statement.h"
+#include"inputStatement.h"
+#include"statementLog.h"
 
 using namespace std;
 
@@ -44,7 +45,7 @@ void month_statement(string companyInfo[]){
     string filename;
     getline(sso,filename);
 
-    vector<statement> statement_list;
+    vector<inputStatement> statement_list;
     ifstream inputFile;
     inputFile.open(filename);
     if(inputFile.fail()){
@@ -70,13 +71,19 @@ void month_statement(string companyInfo[]){
     }else{
         string temp;
         vector<string> tempVector;
-        statement tempStatement;
+        inputStatement tempStatement;
         int count = 0;
         while(getline(inputFile,temp)){
             if(count > 8){
                 dataGetter(tempVector, temp);
                 int* tempDate = dateSpilter(tempVector[0]);
-                tempStatement = {{tempDate[0],tempDate[1],tempDate[2]},tempVector[1],tempVector[2],stof(tempVector[3]),stof(tempVector[4]),stof(tempVector[5])};
+				if(tempVector[3] == "NA"){
+					tempVector[3] = "0";
+				}
+				if(tempVector[4] == "NA"){
+					tempVector[4] = "0";
+				}
+                tempStatement = {{tempDate[0],tempDate[1],tempDate[2]},tempVector[1],tempVector[2],stof(tempVector[3]),stof(tempVector[4])};
                 statement_list.push_back(tempStatement);
                 tempVector.clear();
             }
@@ -84,10 +91,145 @@ void month_statement(string companyInfo[]){
         }
 
 		inputFile.close();
-
+		currentMonthDataDisplayer(statement_list); 
     }
 
 
+}
+
+void currentMonthDataDisplayer (vector<inputStatement> &statement_list){
+	int date[3];
+	currentDate(date);
+	int choice = 0;
+
+	vector<statementLog> logList;
+	ifstream inputFile;
+	inputFile.open(R"(src/StatementLog.csv)");
+	string temp;
+	while(getline(inputFile,temp)){
+		vector<string> tempVector;
+		statementLog tempLog;
+		dataGetter(tempVector,temp);
+		int* date = dateSpilter(tempVector[0]);
+		tempLog = {{date[0],date[1],date[2]}, stof(tempVector[1])};
+		logList.push_back(tempLog);
+	}
+	inputFile.close();
+
+	int previousDate[3];
+
+	if(date[2] != 1){
+		previousDate[0] = date[0];
+		previousDate[1] = date[1] - 1;
+		previousDate[2] = date[2]; 
+	}else{
+		previousDate[0] = date[0];
+		previousDate[1] = 12;
+		previousDate[2] = date[2] - 1; 
+	}
+
+	vector<float> previousBalance;
+
+	for(int i = 0; i < logList.size(); i++){
+		if((previousDate[1] == logList[i].date[1]) && (previousDate[2] == logList[i].date[2])){
+			previousBalance.push_back(logList[i].balance);
+		}
+	}
+
+	
+	float totalincome = 0.0, totalexpenses = 0.0, totalbalance = 0.0;
+	do{
+		system("CLS");
+		cout << fixed << setprecision(2);
+		cout << "------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
+		cout << setw(60.5) << " " << "MONTHLY STATEMENT (" << month[date[1]-1] << ")"<< endl; 
+		cout << "------------------------------------------------------------------------------------------------------------------------------------------------" << endl << endl;
+		cout << setw(5) << left << "NO." << setw(20) << left << "DATE" << setw(60) << left << "DESCRIPTION" << setw(20) << "INCOME" << setw(20) << "EXPENSES" << setw(20) << "BALANCE" << endl;
+		cout << endl << "------------------------------------------------------------------------------------------------------------------------------------------------" << endl << endl;
+		cout << setw(5) << left << "0" << setw(140) << previousBalance[0] << endl;
+		for(int i = 0; i < statement_list.size(); i++){
+			string tempDate = to_string(statement_list[i].date[0]) + "-" + to_string(statement_list[i].date[1]) + "-" + to_string(statement_list[i].date[2]);
+			float tempCurrentBalance = previousBalance[i] + statement_list[i].income - statement_list[i].expenses;
+			previousBalance.push_back(tempCurrentBalance);
+			cout << setw(5) << left << i + 1 << setw(20) << left << tempDate << setw(60) << left << statement_list[i].description << setw(20) << statement_list[i].income << setw(20) << statement_list[i].expenses << setw(20) << tempCurrentBalance << endl; 
+		}
+		for(int i = 0; i < statement_list.size(); i++){
+			totalincome += statement_list[i].income;
+			totalexpenses += statement_list[i].expenses;
+		}
+		totalbalance = previousBalance[previousBalance.size() - 1];
+		cout << setw(105) << totalincome << setw(20) << totalexpenses << setw(20) << totalbalance << endl;
+		cout << endl << "------------------------------------------------------------------------------------------------------------------------------------------------" << endl << endl;
+
+		int choice2 = 0;
+
+		cout << setw(5) << " " << "1. Return to Main Menu and Save" << endl;
+		cout << setw(5) << " " << "2. Add Statement" << endl;
+		cout << setw(5) << " " << "3. Insert Statement" << endl;
+		cout << setw(5) << " " << "4. Make Changes" << endl;
+		cout << setw(5) << " " << "5. Delete Statement" << endl << endl;
+		cout << "-------------------------------------------------------------------------------------------------------------------------------------------" << endl;
+		choice2 = choiceGetter(5);
+		cout << "-------------------------------------------------------------------------------------------------------------------------------------------" << endl;
+
+		switch (choice2) {
+		int choice3, choice4;
+		case 2:
+				cout << "---------------------------------------------------------------" << endl << endl;
+			break;
+
+		case 4:
+			cout << setw(5) << " " << "Select the No. of the data that needed for changes" << endl;
+			choice4 = choiceGetter(statement_list.size()) - 1;
+			do {
+				system("CLS");
+				cout << "---------------------------------------------------------------" << endl;
+				cout << setw(25.5) << " " << "Statement Info" << endl;
+				cout << "---------------------------------------------------------------" << endl << endl;
+				cout << setw(5) << " " << "Please Select the Information which need to be changed" << endl;
+				cout << setw(5) << " " << "----------------------------" << endl << endl;
+				cout << setw(5) << " " << "1. DATE : " << statement_list[choice4].date[0] << "-" << statement_list[choice4].date[1] << "-" << statement_list[choice4].date[2] << endl;
+				cout << setw(5) << " " << "2. DESCRIPTION : " << statement_list[choice4].description << endl;
+				cout << setw(5) << " " << "3. INCOME : " << statement_list[choice4].income << endl;
+				cout << setw(5) << " " << "4. EXPENSES : " << statement_list[choice4].expenses << endl;
+				cout << setw(5) << " " << "5. CONFIRMED (Nothing to Change)" << endl << endl;
+				cout << "---------------------------------------------------------------" << endl;
+				choice3 = choiceGetter(5);
+				cout << "---------------------------------------------------------------" << endl << endl;
+
+				string strQuantity;
+				string strPrice;
+				switch (choice3) {
+				case 1:
+					cout << endl << "---------------------------------------------------------------" << endl;
+					break;
+				case 2:
+					break;
+				case 3:
+					cout << endl << "---------------------------------------------------------------" << endl;
+					break;
+				case 4:
+					cout << endl << "---------------------------------------------------------------" << endl;
+					break;
+				case 5:
+					cout << endl << "---------------------------------------------------------------" << endl;
+					break;
+				default:
+					break;
+				}
+			} while (choice2 != 5);
+			break;
+		case 5:
+			cout << setw(5) << " " << "Select the No. of the statement needed to Delete" << endl;
+			choice3 = choiceGetter(statement_list.size());
+			statement_list.erase(statement_list.begin() + (choice - 1));
+			break;
+		default:
+			break;
+		}
+
+	}while(choice != 1);
+	
 }
 
 //Getter
