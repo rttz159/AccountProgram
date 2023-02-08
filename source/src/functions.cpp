@@ -35,12 +35,12 @@ int main_menu(){
 	return choice;
 }
 
-void month_statement(){
+void month_statement(string companyInfo[]){
     
     int date[3];
     currentDate(date);
     stringstream sso;
-    sso << "Statements//" << month[date[1]-1] << date[2] << ".csv";
+    sso << "Statements\\" << month[date[1]-1] << date[2] << ".csv";
     string filename;
     getline(sso,filename);
 
@@ -51,8 +51,17 @@ void month_statement(){
 
         ofstream outputFile;
         outputFile.open(filename);
+		vector<string> address;
+		dataGetter(address,companyInfo[1]);
+		outputFile << endl;
+		outputFile << companyInfo[0] << endl;
+		outputFile << "\"" << address[0] << ", " << address[1] << ", " << address[2] << ", " << address[3] << "\"" << endl;
+		outputFile << "Tel : " << companyInfo[2] << endl;
+		outputFile << "Email : " << companyInfo[3] << endl;
+		outputFile << endl << endl;
         outputFile << "DATE,DESCRIPTION,INVOICE NO,INCOME,EXPENSES,BALANCE" << endl;
         outputFile.close();
+		inputFile.close();
         cout << "This month's statement wasn't found, generating a new statement" << endl;
         cout << "User will be returned to the main menu" << endl;
         Sleep(800);
@@ -64,7 +73,7 @@ void month_statement(){
         statement tempStatement;
         int count = 0;
         while(getline(inputFile,temp)){
-            if(count != 0){
+            if(count > 8){
                 dataGetter(tempVector, temp);
                 int* tempDate = dateSpilter(tempVector[0]);
                 tempStatement = {{tempDate[0],tempDate[1],tempDate[2]},tempVector[1],tempVector[2],stof(tempVector[3]),stof(tempVector[4]),stof(tempVector[5])};
@@ -73,6 +82,9 @@ void month_statement(){
             }
             count++;
         }
+
+		inputFile.close();
+
     }
 
 

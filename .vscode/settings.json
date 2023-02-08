@@ -1,6 +1,9 @@
 {
   "files.associations": {
     "ostream": "cpp",
-    "xstring": "cpp"
-  }
+    "xstring": "cpp",
+    "iostream": "cpp"
+  },
+  "cmake.sourceDirectory": "${workspaceFolder}/source",
+  "cmake.configureOnOpen": true
 }
